@@ -106,36 +106,23 @@ def compute_vaccine():
     df = pd.read_csv('COVID_demo_31102021.csv', usecols=['Date', 'Demographic_category', 'Series_Complete_Yes',
                                                          'Series_Complete_Pop_Pct_known'])
     df = df[df['Date'] == '10/31/2021']
-    total_vaccines = 0
-    o_pct = 0
-    y_pct = 0
-    a_pct = 0
-    b_pct = 0
-    h_pct = 0
-    n_pct = 0
-    w_pct = 0
+    demo = {}
     for row in df.itertuples():
         if row[2] == 'Age_known':
-            total_vaccines = row[3]
+            demo[row[2]] = row[3]
         elif row[2].startswith('Ages') and row[2] not in ('Ages_<18yrs', 'Ages_30-39_yrs', 'Ages_18-29_yrs'):
-            print(row[2])
-            age = row[2].lstrip('Ages_').lstrip('<').rstrip('_yrs').rstrip('+')
-            if int(age.split('-')[0]) < 65:
-                y_pct += row[4] / 100
-            else:
-                o_pct += row[4] / 100
+            demo[row[2]] = row[4] / 100
         elif row[2].startswith('Race'):
             re = row[2].lstrip('Race_eth_')
             if re in ('NHAsian', 'NHNHOPI'):
-                a_pct += row[4] / 100
-            elif re == 'NHBlack':
-                b_pct += row[4] / 100
-            elif re == 'Hispanic':
-                h_pct += row[4] / 100
-            elif re == 'NHAIAN':
-                n_pct += row[4] / 100
-            elif re == 'NHWhite':
-                w_pct += row[4] / 100
+                re = 'NHAsian'
+                if re in demo:
+                    demo[re] += row[4] / 100
+                else:
+                    demo[re] = row[4] / 100
+            elif re in ('NHBlack', 'Hispanic', 'NHAIAN', 'NHWhite'):
+                demo[re] = row[4] / 100
+    print(demo)
 
     oa, ob, oh, on, ow, ya, yb, yh, yn, yw = solve(total_vaccines, o_pct, y_pct, a_pct, b_pct, h_pct, n_pct, w_pct)
     a = oa + ya
